@@ -3,8 +3,8 @@ name: Android APK Build (SmsRupee)
 on:
   push:
     branches:
-      - master # Or main, depending on your repository's primary branch
-  workflow_dispatch: # Allows manual triggering from GitHub UI
+      - master
+  workflow_dispatch:
 
 jobs:
   build_apk:
@@ -27,6 +27,7 @@ jobs:
         with:
           node-version: '20'
 
+      # Cache Node Modules: Add one cache step
       - name: Cache Node Modules
         uses: actions/cache@v4
         with:
@@ -36,18 +37,9 @@ jobs:
             ${{ runner.os }}-node-
 
       - name: Install Dependencies
-        # We use --force to bypass the dependency resolution errors encountered earlier
         run: npm install --force
 
-      # --- Critical Step: Generates the Android/Gradle structure ---
-      - name: Run Expo Prebuild (Generates Android/Gradle files)
-        # The app.json file provides the answers, preventing the non-interactive crash.
-        run: npx expo prebuild --platform android --no-install
-        env:
-          # Required to prevent Expo from trying to download libraries twice
-          EXPO_NO_DOTENV: true 
-
-      # Cache Gradle dependencies to speed up future builds
+      # --- CRITICAL STEP: Cache Gradle dependencies (L55) ---
       - name: Cache Gradle Dependencies
         uses: actions/cache@v4
         with:
@@ -56,32 +48,24 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
+      # --- Critical Step: Generates the Android/Gradle structure (L64) ---
+      - name: Run Expo Prebuild (Generates Android/Gradle files)
+        run: npx expo prebuild --platform android --no-install
+        env:
+          EXPO_NO_DOTENV: true 
+
       - name: Make Gradle Wrapper Executable
         run: chmod +x android/gradlew
 
       - name: Build Release APK (Includes Native Fixes)
         run: |
-          # This compiles the custom Java files you created.
           cd android
           ./gradlew assembleRelease
 
+      # --- Final Step: Upload the APK (L80) ---
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
           name: smsrupee-release-apk
           path: android/app/build/outputs/apk/release/app-release.apk
           retention-days: 7
-
-Final Push Commands
-Please execute these final commands to commit the fixed file and push to GitHub.
-cd ~/SmsRupeeApp
-
-# 1. Stage the fixed workflow file
-git add .github/workflows/android_build.yml
-
-# 2. Commit the fix
-git commit -m "fix: Final YML fix for prebuild crash, compiling SMS Rupee APK"
-
-# 3. Push the fix and trigger the final build
-git push origin master
-
