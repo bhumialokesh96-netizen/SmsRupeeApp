@@ -1,0 +1,20 @@
+#!/usr/bin/env sh
+
+# Determine the Java command to run the Ant build
+if [ -n "$JAVA_HOME" ]; then
+    JAVACMD="$JAVA_HOME/bin/java"
+else
+    JAVACMD="java"
+fi
+
+# Determine the directory the script is being run from
+APP_HOME=$(dirname "$0")
+
+# Determine the classpath for the Ant build
+CLASSPATH="$APP_HOME/gradle/wrapper/gradle-wrapper.jar"
+
+# Set the Java memory limits safely for the build
+GRADLE_OPTS="-Xmx1024m -Dfile.encoding=UTF-8"
+
+# Execute the Java command
+exec "$JAVACMD" $GRADLE_OPTS -classpath "$CLASSPATH" org.gradle.wrapper.GradleWrapperMain "$@"
