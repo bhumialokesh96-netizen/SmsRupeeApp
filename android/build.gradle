@@ -5,10 +5,9 @@ buildscript {
         minSdkVersion = 24
         compileSdkVersion = 34
         targetSdkVersion = 34
-        // **UPDATE:** Use a known stable, modern Kotlin version
+        // Use a known stable, modern Kotlin version
         kotlinVersion = "1.9.20" 
-        
-        // **UPDATE:** Use latest stable Android Gradle Plugin (AGP) for compatibility
+        // Use latest stable Android Gradle Plugin (AGP) for compatibility
         androidGradlePlugin = "8.2.2" 
     }
     repositories {
@@ -45,3 +44,4 @@ allprojects {
 tasks.register('clean', Delete) {
     delete rootProject.buildDir
 }
+
