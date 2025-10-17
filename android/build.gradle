@@ -5,9 +5,10 @@ buildscript {
         minSdkVersion = 24
         compileSdkVersion = 34
         targetSdkVersion = 34
-        kotlinVersion = "1.8.0" 
+        // **UPDATE:** Use a known stable, modern Kotlin version
+        kotlinVersion = "1.9.20" 
         
-        // Use a stable, newer version of the Android Gradle Plugin
+        // **UPDATE:** Use latest stable Android Gradle Plugin (AGP) for compatibility
         androidGradlePlugin = "8.2.2" 
     }
     repositories {
@@ -15,7 +16,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        // Use a stable, newer version of the Android Gradle Plugin
+        // Use latest stable AGP
         classpath "com.android.tools.build:gradle:$androidGradlePlugin"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
         
