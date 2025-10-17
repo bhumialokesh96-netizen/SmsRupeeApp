@@ -1,0 +1,9 @@
+// Root project name
+rootProject.name = 'SmsRupeeApp'
+
+// Includes all node modules that define an Android subproject (like react-native-device-info)
+apply from: new File(["node", "--print", "require.resolve('expo/package.json')"].execute(null, rootDir).text.trim(), "../scripts/include-expo-packages.gradle")
+apply from: new File(["node", "--print", "require.resolve('react-native/package.json')"].execute(null, rootDir).text.trim(), "../react.gradle")
+
+// Add your custom project folders/modules here if needed.
+include ':app' 
