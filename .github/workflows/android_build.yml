@@ -1,0 +1,46 @@
+name: Android APK Build (SmsRupee)
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build_apk:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Environment
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Run Expo Prebuild
+        run: npx expo prebuild --platform android --no-install
+
+      - name: Make Gradle Wrapper Executable
+        run: chmod +x android/gradlew
+
+      - name: Build Release APK
+        run: |
+          cd android
+          ./gradlew assembleRelease 
+
+      - name: Upload Release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: smsrupee-release-apk
+          path: android/app/build/outputs/apk/release/app-release.apk
+          retention-days: 7
+
