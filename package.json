@@ -18,8 +18,9 @@
     "react-native-screens": "3.31.1",
     "expo-application": "~5.9.1",
     "expo-device": "~6.0.2",
-    "expo-sms": "~12.0.0", 
-    "react-native-device-info": "^10.14.2"
+    "expo-sms": "*", 
+    "react-native-device-info": "*",
+    "@react-native-community/netinfo": "11.1.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"
