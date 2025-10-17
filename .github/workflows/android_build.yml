@@ -3,6 +3,7 @@ name: Android APK Build (SmsRupee)
 on:
   push:
     branches:
+      - master
       - main
   workflow_dispatch:
 
@@ -14,19 +15,24 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Environment
+      # Set up Java 17 for Android compilation
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
-      - uses: actions/setup-node@v4
+
+      # Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: Install Dependencies
-        run: npm install
+      - name: Install Dependencies (Using --force to resolve version clashes)
+        # This command is the key fix for the ETARGET error.
+        run: npm install --force
 
-      - name: Run Expo Prebuild
+      - name: Run Expo Prebuild (Generates Android/Gradle files)
         run: npx expo prebuild --platform android --no-install
 
       - name: Make Gradle Wrapper Executable
@@ -34,6 +40,7 @@ jobs:
 
       - name: Build Release APK
         run: |
+          # Compiles the native Java fixes (SmsNativeModule)
           cd android
           ./gradlew assembleRelease 
 
