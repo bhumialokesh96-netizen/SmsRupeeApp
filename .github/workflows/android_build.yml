@@ -14,6 +14,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # --- NEW STEP: FORCE CLEANUP OF BUILD ENVIRONMENT ---
+      - name: Clean Up Local Caches
+        run: |
+          # Clears npm and Expo cache folders in the cloud runner environment
+          rm -rf ~/.npm
+          rm -rf ~/.expo
+
       # Set up Java 17, required for the native Android compilation
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -27,7 +34,7 @@ jobs:
         with:
           node-version: '20'
 
-      # Cache Node Modules: Add one cache step
+      # Cache Node Modules: We keep the caching step for speed, but the cleanup above ensures a fresh start.
       - name: Cache Node Modules
         uses: actions/cache@v4
         with:
@@ -39,7 +46,7 @@ jobs:
       - name: Install Dependencies
         run: npm install --force
 
-      # --- CRITICAL STEP: Cache Gradle dependencies (L55) ---
+      # Cache Gradle dependencies
       - name: Cache Gradle Dependencies
         uses: actions/cache@v4
         with:
@@ -48,7 +55,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      # --- Critical Step: Generates the Android/Gradle structure (L64) ---
+      # --- Critical Step: Generates the Android/Gradle structure ---
       - name: Run Expo Prebuild (Generates Android/Gradle files)
         run: npx expo prebuild --platform android --no-install
         env:
@@ -59,10 +66,10 @@ jobs:
 
       - name: Build Release APK (Includes Native Fixes)
         run: |
+          # This compiles the custom Java files you created.
           cd android
           ./gradlew assembleRelease
 
-      # --- Final Step: Upload the APK (L80) ---
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
