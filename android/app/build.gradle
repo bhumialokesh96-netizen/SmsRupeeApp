@@ -1,0 +1,30 @@
+// App-level build.gradle file
+
+apply plugin: 'com.android.application'
+// **CRITICAL FIX: Use the standard Expo way to apply native plugins**
+apply from: new File(["node", "--print", "require.resolve('expo/package.json')"].execute(null, rootDir).text.trim(), "../expo-module.gradle")
+
+android {
+    // Ensure these versions match the project-level build.gradle
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    defaultConfig {
+        applicationId "com.lokeshbhumia123.smsrupeeapp"
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode 1
+        versionName "1.0"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: "libs", include: ["*.jar"])
+    implementation "com.facebook.react:react-native:+"  // From node_modules
+
+    // Add necessary dependencies here
+}
