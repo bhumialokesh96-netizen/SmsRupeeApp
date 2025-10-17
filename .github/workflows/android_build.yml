@@ -1,10 +1,10 @@
-name: Android APK Build (SmsRupee)
-
+name: Android APK Build (SmsRupee)(SmsRupee)
+(SmsRupee)(SmsRupee)
 on:
-  push:
+  push:push:
     branches:
-      - master
-  workflow_dispatch:
+      - master # Or main, depending on your repository's primary branch
+  workflow_dispatch: # Allows manual triggering from GitHub UI
 
 jobs:
   build_apk:
@@ -13,13 +13,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      # --- NEW STEP: FORCE CLEANUP OF BUILD ENVIRONMENT ---
-      - name: Clean Up Local Caches
-        run: |
-          # Clears npm and Expo cache folders in the cloud runner environment
-          rm -rf ~/.npm
-          rm -rf ~/.expo
 
       # Set up Java 17, required for the native Android compilation
       - name: Set up JDK 17
@@ -34,19 +27,28 @@ jobs:
         with:
           node-version: '20'
 
-      # Cache Node Modules: We keep the caching step for speed, but the cleanup above ensures a fresh start.
-      - name: Cache Node Modules
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
+      # --- CRITICAL FIX: Force Cleanup of Caches ---
+      - name: Clean Up Local Caches (Prevents 'no such file or directory' errors)
+        run: |
+          # Clears npm and Expo cache folders in the cloud runner environment
+          rm -rf ~/.npm
+          rm -rf ~/.expo
 
       - name: Install Dependencies
+        # Use --force to bypass the dependency resolution errors
         run: npm install --force
 
-      # Cache Gradle dependencies
+      # --- Critical Step: Generates the Android/Gradle structure ---
+      - name: Run Expo Prebuild (Generates Android/Gradle files)
+        # The app.json file provides the answers, preventing the non-interactive crash.
+        run: npx expo prebuild --platform android --no-install
+        env:
+          EXPO_NO_DOTENV: true 
+
+      - name: Make Gradle Wrapper Executable
+        run: chmod +x android/gradlew
+
+      # Cache Gradle dependencies (After prebuild)
       - name: Cache Gradle Dependencies
         uses: actions/cache@v4
         with:
@@ -54,15 +56,6 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('android/build.gradle') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
-
-      # --- Critical Step: Generates the Android/Gradle structure ---
-      - name: Run Expo Prebuild (Generates Android/Gradle files)
-        run: npx expo prebuild --platform android --no-install
-        env:
-          EXPO_NO_DOTENV: true 
-
-      - name: Make Gradle Wrapper Executable
-        run: chmod +x android/gradlew
 
       - name: Build Release APK (Includes Native Fixes)
         run: |
@@ -76,3 +69,5 @@ jobs:
           name: smsrupee-release-apk
           path: android/app/build/outputs/apk/release/app-release.apk
           retention-days: 7
+
+
